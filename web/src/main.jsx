@@ -16,6 +16,8 @@ const Invoices = lazy(() => import('./pages/app/Invoices'))
 const InvoiceForm = lazy(() => import('./pages/app/InvoiceForm'))
 const InvoiceDetail = lazy(() => import('./pages/app/InvoiceDetail'))
 const Clients = lazy(() => import('./pages/app/Clients'))
+const Sequences = lazy(() => import('./pages/app/Sequences'))
+const SequenceEditor = lazy(() => import('./pages/app/SequenceEditor'))
 
 function Root() {
   return (
@@ -67,6 +69,9 @@ const router = createBrowserRouter([
           { path: 'invoices/:id', element: <Page><InvoiceDetail /></Page> },
           { path: 'invoices/:id/edit', element: <Page><InvoiceForm /></Page> },
           { path: 'clients', element: <Page><Clients /></Page> },
+          { path: 'sequences', element: <Page><Sequences /></Page> },
+          { path: 'sequences/new', element: <Page><SequenceEditor /></Page> },
+          { path: 'sequences/:id', element: <Page><SequenceEditor /></Page> },
           { path: 'settings', element: <Page><Settings /></Page> },
           { path: '*', element: <NotFound inApp /> },
         ],

@@ -97,7 +97,7 @@ export default function InvoiceForm() {
     setErrors(next)
     setFormError(null)
     if (Object.keys(next).length) {
-      document.querySelector('[aria-invalid="true"]')?.focus()
+      setTimeout(() => document.querySelector('[aria-invalid="true"]')?.focus(), 0)
       return
     }
 

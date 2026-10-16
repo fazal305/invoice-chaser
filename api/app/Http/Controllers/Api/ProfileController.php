@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserLogo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProfileController extends Controller
 {
@@ -52,24 +51,21 @@ class ProfileController extends Controller
         }
 
         $user = $request->user();
-        $path = $file->storeAs('logos', Str::random(40).'.'.$ext, 'local');
-        $old = $user->logo_path;
-        $user->forceFill(['logo_path' => $path])->save();
-        if ($old) {
-            Storage::disk('local')->delete($old);
-        }
+        UserLogo::updateOrCreate(['user_id' => $user->id], ['mime' => $mime, 'data' => file_get_contents($file->getRealPath())]);
 
         return response()->json(['user' => $user->toProfile()]);
     }
 
-    public function showLogo(Request $request): StreamedResponse|JsonResponse
+    public function showLogo(Request $request): Response|JsonResponse
     {
-        $path = $request->user()->logo_path;
-        if (! $path || ! Storage::disk('local')->exists($path)) {
+        $logo = UserLogo::find($request->user()->id);
+        if (! $logo) {
             return response()->json(['message' => 'No logo uploaded.'], 404);
         }
 
-        return Storage::disk('local')->response($path, null, [
+        return response($logo->data, 200, [
+            'Content-Type' => $logo->mime,
+            'Content-Disposition' => 'inline',
             'Cache-Control' => 'private, max-age=300',
         ]);
     }
@@ -77,10 +73,7 @@ class ProfileController extends Controller
     public function deleteLogo(Request $request): JsonResponse
     {
         $user = $request->user();
-        if ($user->logo_path) {
-            Storage::disk('local')->delete($user->logo_path);
-            $user->forceFill(['logo_path' => null])->save();
-        }
+        UserLogo::whereKey($user->id)->delete();
 
         return response()->json(['user' => $user->toProfile()]);
     }
@@ -94,9 +87,6 @@ class ProfileController extends Controller
             throw ValidationException::withMessages(['password' => 'Password is incorrect.']);
         }
 
-        if ($user->logo_path) {
-            Storage::disk('local')->delete($user->logo_path);
-        }
         $user->tokens()->delete();
         $user->invoices()->delete();
         $user->delete();

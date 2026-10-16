@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChaseSequenceController;
 use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\CronController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ImportController;
 use App\Http\Controllers\Api\InvoiceController;
@@ -39,6 +40,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/read', [NotificationController::class, 'markAllRead']);
 });
+
+Route::post('/cron/run', CronController::class)->middleware('throttle:auth');
 
 Route::middleware('throttle:webhooks')->prefix('webhooks')->group(function () {
     Route::post('/mailgun', [WebhookController::class, 'mailgun']);

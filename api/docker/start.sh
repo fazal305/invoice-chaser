@@ -2,7 +2,13 @@
 # Runs the HTTP server, the queue worker and the scheduler in one container so they share the uploads volume.
 set -e
 
-mkdir -p storage/app/private/logos storage/framework/cache storage/framework/views storage/logs
+mkdir -p storage/framework/cache storage/framework/views storage/logs
+
+# Managed MySQL (e.g. Aiven) requires TLS; the CA certificate arrives as an env var.
+if [ -n "$DB_SSL_CA_PEM" ]; then
+    printf '%s\n' "$DB_SSL_CA_PEM" > /tmp/db-ca.pem
+    export MYSQL_ATTR_SSL_CA=/tmp/db-ca.pem
+fi
 
 php artisan config:cache
 php artisan route:cache

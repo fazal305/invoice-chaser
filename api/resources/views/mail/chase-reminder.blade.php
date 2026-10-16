@@ -10,8 +10,8 @@
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2ded4;border-radius:12px;">
 <tr><td style="padding:28px 28px 8px;">
-@if ($logoPath)
-<img src="{{ $message->embed($logoPath) }}" alt="{{ $companyName }}" style="max-height:48px;max-width:200px;display:block;">
+@if ($logo)
+<img src="{{ $message->embedData($logo->data, 'logo', $logo->mime) }}" alt="{{ $companyName }}" style="max-height:48px;max-width:200px;display:block;">
 @else
 <p style="margin:0;font-size:18px;font-weight:700;">{{ $companyName }}</p>
 @endif

@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ChaseReminderMail;
+use App\Models\Client;
+use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserLogo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -45,31 +48,41 @@ class ProfileTest extends TestCase
         ]))->assertUnprocessable()->assertJsonValidationErrors(['timezone', 'currency', 'payment_url']);
     }
 
-    public function test_logo_upload_sniffs_content_and_randomizes_name(): void
+    public function test_logo_upload_stores_sniffed_type_and_serves_it(): void
     {
-        Storage::fake('local');
         $user = User::factory()->create();
 
         $this->asUser($user)->post('/api/profile/logo', [
             'logo' => UploadedFile::fake()->createWithContent('my logo.png', base64_decode(self::PNG_1PX)),
         ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('user.has_logo', true);
 
-        $path = $user->fresh()->logo_path;
-        $this->assertMatchesRegularExpression('#^logos/[A-Za-z0-9]{40}\.png$#', $path);
-        Storage::disk('local')->assertExists($path);
+        $this->assertSame('image/png', UserLogo::find($user->id)->mime);
+        $this->asUser($user)->get('/api/profile/logo')
+            ->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
 
-        $this->asUser($user)->get('/api/profile/logo')->assertOk();
+        $this->asUser($user)->deleteJson('/api/profile/logo')->assertOk()->assertJsonPath('user.has_logo', false);
+        $this->asUser($user)->get('/api/profile/logo')->assertNotFound();
     }
 
     public function test_logo_upload_rejects_disguised_file(): void
     {
-        Storage::fake('local');
         $user = User::factory()->create();
         $fake = UploadedFile::fake()->createWithContent('logo.png', '<?php echo 1;');
 
         $this->asUser($user)->post('/api/profile/logo', ['logo' => $fake], ['Accept' => 'application/json'])
             ->assertUnprocessable()->assertJsonValidationErrors('logo');
-        $this->assertNull($user->fresh()->logo_path);
+        $this->assertNull(UserLogo::find($user->id));
+    }
+
+    public function test_logo_is_embedded_in_reminder_email(): void
+    {
+        $user = User::factory()->create();
+        UserLogo::create(['user_id' => $user->id, 'mime' => 'image/png', 'data' => base64_decode(self::PNG_1PX)]);
+        $invoice = Invoice::factory()->for(Client::factory()->for($user))->create(['user_id' => $user->id]);
+
+        $html = (new ChaseReminderMail($invoice->load('user', 'client'), 'S', 'Body', null))->render();
+
+        $this->assertMatchesRegularExpression('#<img src="(cid:|data:image/png)#', $html);
     }
 
     public function test_delete_account_requires_password(): void

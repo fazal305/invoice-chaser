@@ -3,11 +3,11 @@
 namespace App\Mail;
 
 use App\Models\Invoice;
+use App\Models\UserLogo;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Support\Facades\Storage;
 
 class ChaseReminderMail extends Mailable
 {
@@ -32,9 +32,7 @@ class ChaseReminderMail extends Mailable
     public function content(): Content
     {
         $user = $this->invoice->user;
-        $logo = $user->logo_path && Storage::disk('local')->exists($user->logo_path)
-            ? Storage::disk('local')->path($user->logo_path)
-            : null;
+        $logo = UserLogo::find($user->id);
 
         return new Content(
             view: 'mail.chase-reminder',
@@ -44,7 +42,7 @@ class ChaseReminderMail extends Mailable
                 'body' => $this->renderedBody,
                 'paymentLink' => $this->paymentLink,
                 'paymentInstructions' => $user->payment_instructions,
-                'logoPath' => $logo,
+                'logo' => $logo,
             ],
         );
     }

@@ -16,7 +16,7 @@ use Laravel\Sanctum\HasApiTokens;
     'name', 'email', 'password', 'company_name', 'timezone', 'currency',
     'payment_terms_days', 'payment_url', 'payment_instructions', 'reply_to_email',
 ])]
-#[Hidden(['password', 'logo_path'])]
+#[Hidden(['password'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -52,7 +52,7 @@ class User extends Authenticatable
             'name' => $this->name,
             'email' => $this->email,
             'company_name' => $this->company_name,
-            'has_logo' => $this->logo_path !== null,
+            'has_logo' => UserLogo::whereKey($this->id)->exists(),
             'timezone' => $this->timezone,
             'currency' => $this->currency,
             'payment_terms_days' => $this->payment_terms_days,

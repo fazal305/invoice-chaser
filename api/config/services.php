@@ -35,6 +35,10 @@ return [
         ],
     ],
 
+    'cron' => [
+        'secret' => env('CRON_SECRET'),
+    ],
+
     'chase' => [
         'send_hour' => (int) env('CHASE_SEND_HOUR', 9),
     ],

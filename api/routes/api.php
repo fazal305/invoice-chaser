@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     Route::get('/dashboard', DashboardController::class);
     Route::post('/import/{type}', ImportController::class)->whereIn('type', ['clients', 'invoices'])->middleware('throttle:uploads');
-    Route::get('/notifications',[NotificationController::class, 'index']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/read', [NotificationController::class, 'markAllRead']);
 });
 

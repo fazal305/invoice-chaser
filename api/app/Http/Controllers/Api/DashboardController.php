@@ -42,13 +42,13 @@ class DashboardController extends Controller
 
         $aging = DB::table('invoices')
             ->where('user_id', $user->id)->whereIn('status', ['sent', 'overdue'])->where('currency', $currency)
-            ->selectRaw("
+            ->selectRaw('
                 SUM(CASE WHEN due_date >= ? THEN amount ELSE 0 END) as current_amt,
                 SUM(CASE WHEN DATEDIFF(?, due_date) BETWEEN 1 AND 30 THEN amount ELSE 0 END) as d30,
                 SUM(CASE WHEN DATEDIFF(?, due_date) BETWEEN 31 AND 60 THEN amount ELSE 0 END) as d60,
                 SUM(CASE WHEN DATEDIFF(?, due_date) BETWEEN 61 AND 90 THEN amount ELSE 0 END) as d90,
                 SUM(CASE WHEN DATEDIFF(?, due_date) > 90 THEN amount ELSE 0 END) as d90plus
-            ", [$today, $today, $today, $today, $today])
+            ', [$today, $today, $today, $today, $today])
             ->first();
 
         $chased = DB::table('invoices')

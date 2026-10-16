@@ -47,6 +47,7 @@ class CsvImporter
             if ($header === null) {
                 $cells[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $cells[0]);
                 $header = array_map(fn ($h) => str_replace([' ', '-'], '_', strtolower(trim((string) $h))), $cells);
+
                 continue;
             }
             if (count($rows) >= self::MAX_ROWS) {

@@ -115,7 +115,7 @@ function LogEntry({ log }) {
         {log.delivered_at && <li>Delivered {formatDateTime(log.delivered_at)}</li>}
         {log.opened_at && <li>Opened {formatDateTime(log.opened_at)}</li>}
       </ul>
-      {log.error_message && <p className="mt-1 text-xs text-danger">{log.error_message}</p>}
+      {log.error_message && <p className={`mt-1 text-xs ${['failed', 'bounced'].includes(log.status) ? 'text-danger' : 'text-muted'}`}>{log.error_message}</p>}
     </>
   )
 }

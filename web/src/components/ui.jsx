@@ -54,7 +54,7 @@ function FieldShell({ id, label, hint, error, required, children, className = ''
     <div className={`min-w-0 ${className}`}>
       <label htmlFor={id} className="mb-1 block text-sm font-medium text-ink">
         {label}
-        {required && <span className="text-danger"> *</span>}
+        {required && <span aria-hidden="true" className="text-danger"> *</span>}
       </label>
       {children}
       {hint && !error && (

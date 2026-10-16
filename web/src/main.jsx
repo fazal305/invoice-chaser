@@ -9,6 +9,9 @@ import { SkeletonRows } from './components/ui'
 import NotFound from './pages/public/NotFound'
 import Landing from './pages/public/Landing'
 
+const Privacy = lazy(() => import('./pages/public/Legal').then((m) => ({ default: m.Privacy })))
+const Terms = lazy(() => import('./pages/public/Legal').then((m) => ({ default: m.Terms })))
+const Faq = lazy(() => import('./pages/public/Legal').then((m) => ({ default: m.Faq })))
 const Login = lazy(() => import('./pages/public/Login'))
 const Register = lazy(() => import('./pages/public/Register'))
 const Dashboard = lazy(() => import('./pages/app/Dashboard'))
@@ -54,6 +57,9 @@ const router = createBrowserRouter([
           { path: '/', element: <Landing /> },
           { path: '/login', element: <Page><Login /></Page> },
           { path: '/register', element: <Page><Register /></Page> },
+          { path: '/privacy', element: <Page><Privacy /></Page> },
+          { path: '/terms', element: <Page><Terms /></Page> },
+          { path: '/faq', element: <Page><Faq /></Page> },
           { path: '*', element: <NotFound /> },
         ],
       },

@@ -2,7 +2,9 @@
 
 Automated accounts-receivable follow-up. Invoice Chaser tracks unpaid invoices and sends scheduled email and SMS payment reminders on a schedule you control — then stops the moment an invoice is paid.
 
-**Live demo:** not deployed yet.
+**Live demo:** https://invoice-chaser-six-sand.vercel.app — create an account to try it. The demo runs in *demo mode*: reminders are scheduled and logged but not delivered, so you can add any sample clients safely.
+
+The API runs on Render's free plan and sleeps when idle, so the first request after a quiet period can take up to a minute.
 
 ![Dashboard with outstanding total, aging chart and chase results](docs/screenshots/dashboard.png)
 
@@ -134,13 +136,24 @@ cd web && npx playwright test                      # end-to-end, starts both dev
 
 Throughput results are in [docs/performance.md](docs/performance.md): 1,250 invoices scanned and reminded in about 42 seconds on a laptop, against a 5-minute requirement.
 
+## Deployment
+
+| Piece | Where | Notes |
+|---|---|---|
+| Web | Vercel (`web/`, Git-connected) | `VITE_API_URL` set in project env; security headers in `web/vercel.json` |
+| API | Render free web service (`api/Dockerfile`) | FrankenPHP serves HTTP; the queue worker and scheduler run in the same container (`api/docker/start.sh`) |
+| Database | Aiven free MySQL | TLS required; the CA certificate is passed as `DB_SSL_CA_PEM` |
+| Hourly run | GitHub Actions (`.github/workflows/chase-cron.yml`) | Calls `POST /api/cron/run` with `CRON_SECRET`, which wakes the sleeping API and runs the chase |
+
+To send real reminders, set `MAIL_MAILER`/SMTP variables and `SMS_DRIVER=twilio` with Twilio credentials on the API service; the in-app demo notice disappears once email delivery is configured.
+
 ## Security
 
 Every request is scoped to the signed-in user, writes are validated server-side, uploads are allowlisted and content-sniffed, webhooks are signature-checked with replay protection, and the API sets no cookies. See [SECURITY.md](SECURITY.md) for details and how to report a vulnerability.
 
 ## Known limitations
 
-- Not deployed yet. The API needs a host that can run a queue worker and the scheduler.
+- The free hosting tier sleeps when idle; reminders run on the hourly GitHub Actions trigger rather than an always-on scheduler.
 - No password reset or email verification (not in the SRS).
 - Only manual entry and CSV import — no live sync with accounting platforms.
 - One user per company; there are no team members or roles.

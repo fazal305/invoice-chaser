@@ -7,6 +7,7 @@ use App\Enums\InvoiceStatus;
 use App\Jobs\SendChaseReminder;
 use App\Models\ChaseLog;
 use App\Models\ChaseSequence;
+use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Services\ChasePlanner;
@@ -79,10 +80,13 @@ class RunChases extends Command
                     if (! $sequence) {
                         continue;
                     }
-                    $plan = ChasePlanner::plan($invoice, $sequence->steps, $logged->get($invoice->id, []), $today);
+                    $usable = ChasePlanner::channelUsableFor($invoice->client);
+                    $plan = ChasePlanner::plan($invoice, $sequence->steps, $logged->get($invoice->id, []), $today, $usable);
 
                     foreach ($plan['skip'] as [$step, $date]) {
-                        $this->record($invoice, $step, $date, ChaseLogStatus::Skipped, 'A later reminder was due, so this one was skipped.');
+                        $this->record($invoice, $step, $date, ChaseLogStatus::Skipped, $usable($step->channel)
+                            ? 'A later reminder was due, so this one was skipped.'
+                            : $this->unusableReason($invoice->client, $step->channel));
                     }
                     foreach ($plan['send'] as [$step, $date]) {
                         $this->queue($invoice, $step, $date);
@@ -93,21 +97,18 @@ class RunChases extends Command
         return $count;
     }
 
+    private function unusableReason(Client $client, string $channel): string
+    {
+        if ($channel === 'email') {
+            return 'The client has no email address.';
+        }
+
+        return $client->phone ? 'The client has opted out of SMS.' : 'The client has no mobile number.';
+    }
+
     private function queue(Invoice $invoice, $step, CarbonImmutable $date): void
     {
-        $client = $invoice->client;
-        $recipient = $step->channel === 'sms' ? $client->phone : $client->email;
-
-        if (! $recipient) {
-            $this->record($invoice, $step, $date, ChaseLogStatus::Skipped, $step->channel === 'sms' ? 'The client has no mobile number.' : 'The client has no email address.');
-
-            return;
-        }
-        if ($step->channel === 'sms' && $client->sms_opt_out) {
-            $this->record($invoice, $step, $date, ChaseLogStatus::Skipped, 'The client has opted out of SMS.', $recipient);
-
-            return;
-        }
+        $recipient = $step->channel === 'sms' ? $invoice->client->phone : $invoice->client->email;
 
         $log = $this->record($invoice, $step, $date, ChaseLogStatus::Queued, null, $recipient);
         if ($log) {

@@ -104,6 +104,21 @@ class ChaseEngineTest extends TestCase
         Queue::assertPushed(SendChaseReminder::class, 1);
     }
 
+    public function test_undeliverable_latest_channel_falls_back_to_latest_usable_step(): void
+    {
+        Queue::fake();
+        $this->client->update(['phone' => null]);
+        $this->invoiceDueIn(-20);
+
+        $this->artisan('chase:run', ['--now' => true]);
+
+        $byOffset = ChaseLog::with('step')->get()->mapWithKeys(fn ($l) => [$l->step->signedOffset() => $l]);
+        $this->assertSame(ChaseLogStatus::Queued, $byOffset[7]->status);
+        $this->assertSame(ChaseLogStatus::Skipped, $byOffset[14]->status);
+        $this->assertSame('The client has no mobile number.', $byOffset[14]->error_message);
+        Queue::assertPushed(SendChaseReminder::class, 1);
+    }
+
     public function test_paid_draft_and_cancelled_invoices_are_never_chased(): void
     {
         Queue::fake();

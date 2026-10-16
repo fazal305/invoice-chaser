@@ -114,7 +114,7 @@ class InvoiceController extends Controller
         }
 
         $logged = $invoice->chaseLogs()->whereNotNull('chase_step_id')->pluck('chase_step_id')->flip()->map(fn () => true)->all();
-        $plan = ChasePlanner::plan($invoice, $sequence->steps()->get(), $logged, $user->localToday());
+        $plan = ChasePlanner::plan($invoice, $sequence->steps()->get(), $logged, $user->localToday(), ChasePlanner::channelUsableFor($invoice->client));
 
         $row = fn ($r, $state) => [
             'date' => $r[1]->toDateString(),
@@ -126,7 +126,9 @@ class InvoiceController extends Controller
 
         return array_merge(
             array_map(fn ($r) => $row($r, 'due_now'), $plan['send']),
-            array_map(fn ($r) => $row($r, 'scheduled'), $plan['upcoming']),
+            array_map(fn ($r) => $row($r, 'scheduled'), array_values(array_filter(
+                $plan['upcoming'], fn ($r) => ChasePlanner::channelUsableFor($invoice->client)($r[0]->channel),
+            ))),
         );
     }
 

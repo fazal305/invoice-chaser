@@ -4,7 +4,7 @@ export function formatMoney(amount, currency = 'USD') {
   const key = currency || 'USD'
   if (!moneyFormatters.has(key)) {
     try {
-      moneyFormatters.set(key, new Intl.NumberFormat(undefined, { style: 'currency', currency: key }))
+      moneyFormatters.set(key, new Intl.NumberFormat(undefined, { style: 'currency', currency: key, currencyDisplay: 'narrowSymbol' }))
     } catch {
       moneyFormatters.set(key, new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
     }

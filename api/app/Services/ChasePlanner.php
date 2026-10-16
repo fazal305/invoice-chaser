@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ChaseStep;
+use App\Models\Client;
 use App\Models\Invoice;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -16,13 +17,21 @@ use Illuminate\Support\Collection;
  */
 class ChasePlanner
 {
+    public static function channelUsableFor(Client $client): \Closure
+    {
+        return fn (string $channel) => $channel === 'sms'
+            ? $client->phone !== null && ! $client->sms_opt_out
+            : $client->email !== null;
+    }
+
     /**
      * @param  Collection<int, ChaseStep>  $steps
      * @param  array<int, true>  $loggedStepIds  step IDs that already have a log for this invoice
      * @return array{send: list<array{0: ChaseStep, 1: CarbonImmutable}>, skip: list<array{0: ChaseStep, 1: CarbonImmutable}>, upcoming: list<array{0: ChaseStep, 1: CarbonImmutable}>}
      */
-    public static function plan(Invoice $invoice, Collection $steps, array $loggedStepIds, CarbonImmutable $today): array
+    public static function plan(Invoice $invoice, Collection $steps, array $loggedStepIds, CarbonImmutable $today, ?callable $channelUsable = null): array
     {
+        $channelUsable ??= fn (string $channel) => true;
         $due = $invoice->due_date->toImmutable()->startOfDay();
         $ready = [];
         $upcoming = [];
@@ -39,7 +48,8 @@ class ChasePlanner
             }
         }
 
-        $eligible = array_filter($ready, fn ($r) => $r[0]->signedOffset() > 0 || $r[1]->equalTo($today));
+        // Steps on a channel the client can't receive must not suppress an earlier step they can.
+        $eligible = array_filter($ready, fn ($r) => ($r[0]->signedOffset() > 0 || $r[1]->equalTo($today)) && $channelUsable($r[0]->channel));
         $latest = $eligible ? max(array_map(fn ($r) => $r[1]->toDateString(), $eligible)) : null;
 
         $send = [];

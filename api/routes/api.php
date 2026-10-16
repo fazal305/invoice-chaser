@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChaseSequenceController;
 use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfileController;
@@ -32,7 +33,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         ->parameters(['chase-sequences' => 'sequence'])->whereNumber('sequence');
     Route::post('/chase-sequences/{sequence}/default', [ChaseSequenceController::class, 'makeDefaultAction'])->whereNumber('sequence');
 
-    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/dashboard', DashboardController::class);
+    Route::get('/notifications',[NotificationController::class, 'index']);
     Route::post('/notifications/read', [NotificationController::class, 'markAllRead']);
 });
 

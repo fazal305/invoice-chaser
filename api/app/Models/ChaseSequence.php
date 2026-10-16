@@ -23,6 +23,11 @@ class ChaseSequence extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function steps(): HasMany
     {
         return $this->hasMany(ChaseStep::class)

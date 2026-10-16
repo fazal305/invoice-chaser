@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChaseSequenceController;
+use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,4 +21,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/profile/logo', [ProfileController::class, 'showLogo']);
     Route::post('/profile/logo', [ProfileController::class, 'uploadLogo'])->middleware('throttle:uploads');
     Route::delete('/profile/logo', [ProfileController::class, 'deleteLogo']);
+
+    Route::apiResource('clients', ClientController::class)->whereNumber('client');
+    Route::apiResource('invoices', InvoiceController::class)->whereNumber('invoice');
+    Route::post('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->whereNumber('invoice');
+
+    Route::apiResource('chase-sequences', ChaseSequenceController::class)
+        ->parameters(['chase-sequences' => 'sequence'])->whereNumber('sequence');
+    Route::post('/chase-sequences/{sequence}/default', [ChaseSequenceController::class, 'makeDefaultAction'])->whereNumber('sequence');
 });

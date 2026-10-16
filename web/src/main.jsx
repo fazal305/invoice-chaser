@@ -12,6 +12,10 @@ import Landing from './pages/public/Landing'
 const Login = lazy(() => import('./pages/public/Login'))
 const Register = lazy(() => import('./pages/public/Register'))
 const Settings = lazy(() => import('./pages/app/Settings'))
+const Invoices = lazy(() => import('./pages/app/Invoices'))
+const InvoiceForm = lazy(() => import('./pages/app/InvoiceForm'))
+const InvoiceDetail = lazy(() => import('./pages/app/InvoiceDetail'))
+const Clients = lazy(() => import('./pages/app/Clients'))
 
 function Root() {
   return (
@@ -57,7 +61,12 @@ const router = createBrowserRouter([
           </RequireAuth>
         ),
         children: [
-          { index: true, element: <Page><Settings /></Page> },
+          { index: true, element: <Page><Invoices /></Page> },
+          { path: 'invoices', element: <Page><Invoices /></Page> },
+          { path: 'invoices/new', element: <Page><InvoiceForm /></Page> },
+          { path: 'invoices/:id', element: <Page><InvoiceDetail /></Page> },
+          { path: 'invoices/:id/edit', element: <Page><InvoiceForm /></Page> },
+          { path: 'clients', element: <Page><Clients /></Page> },
           { path: 'settings', element: <Page><Settings /></Page> },
           { path: '*', element: <NotFound inApp /> },
         ],

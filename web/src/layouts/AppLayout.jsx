@@ -100,6 +100,11 @@ export default function AppLayout() {
             </Button>
           </div>
         </header>
+        {user && !user.email_delivery_enabled && (
+          <p role="note" className="border-b border-warn/20 bg-warn-tint px-4 py-2 text-center text-xs text-warn sm:px-6">
+            Demo mode: reminders are scheduled and logged but not actually delivered to clients.
+          </p>
+        )}
         <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
           <Outlet />
         </main>

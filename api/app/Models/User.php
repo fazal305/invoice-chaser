@@ -59,6 +59,8 @@ class User extends Authenticatable
             'payment_url' => $this->payment_url,
             'payment_instructions' => $this->payment_instructions,
             'reply_to_email' => $this->reply_to_email,
+            'email_delivery_enabled' => ! in_array(config('mail.default'), ['log', 'array'], true),
+            'sms_delivery_enabled' => config('services.sms.driver') === 'twilio',
         ];
     }
 

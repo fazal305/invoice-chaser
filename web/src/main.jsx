@@ -12,6 +12,7 @@ import Landing from './pages/public/Landing'
 const Login = lazy(() => import('./pages/public/Login'))
 const Register = lazy(() => import('./pages/public/Register'))
 const Dashboard = lazy(() => import('./pages/app/Dashboard'))
+const Import = lazy(() => import('./pages/app/Import'))
 const Settings = lazy(() => import('./pages/app/Settings'))
 const Invoices = lazy(() => import('./pages/app/Invoices'))
 const InvoiceForm = lazy(() => import('./pages/app/InvoiceForm'))
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
           { path: 'sequences', element: <Page><Sequences /></Page> },
           { path: 'sequences/new', element: <Page><SequenceEditor /></Page> },
           { path: 'sequences/:id', element: <Page><SequenceEditor /></Page> },
+          { path: 'import', element: <Page><Import /></Page> },
           { path: 'settings', element: <Page><Settings /></Page> },
           { path: '*', element: <NotFound inApp /> },
         ],

@@ -1,0 +1,2 @@
+invoice_number,client_email,client_name,amount,currency,issue_date,due_date,status,payment_url,notes
+INV-2001,accounts@example.com,Example Client Ltd,1250.00,USD,2026-10-01,2026-10-31,sent,https://pay.example.com/inv-2001,

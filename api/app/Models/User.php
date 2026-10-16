@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -61,8 +62,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function localToday(): \Carbon\CarbonImmutable
+    /** The user's current calendar date, as midnight UTC so it compares cleanly with stored DATE columns. */
+    public function localToday(): CarbonImmutable
     {
-        return now($this->timezone)->toImmutable()->startOfDay();
+        return CarbonImmutable::parse(now($this->timezone)->toDateString(), 'UTC');
     }
 }

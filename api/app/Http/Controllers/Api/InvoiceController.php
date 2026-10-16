@@ -7,6 +7,7 @@ use App\Enums\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
+use App\Services\ChasePlanner;
 use App\Services\InvoiceStatusService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -96,7 +97,37 @@ class InvoiceController extends Controller
         return response()->json([
             'data' => new InvoiceResource($invoice),
             'activity' => $logs,
+            'upcoming' => $this->upcoming($request, $invoice),
         ]);
+    }
+
+    private function upcoming(Request $request, Invoice $invoice): array
+    {
+        if (! $invoice->status->isChaseable()) {
+            return [];
+        }
+        $user = $request->user();
+        $sequence = $invoice->chaseSequence
+            ?? $user->chaseSequences()->where('is_default', true)->first();
+        if (! $sequence) {
+            return [];
+        }
+
+        $logged = $invoice->chaseLogs()->whereNotNull('chase_step_id')->pluck('chase_step_id')->flip()->map(fn () => true)->all();
+        $plan = ChasePlanner::plan($invoice, $sequence->steps()->get(), $logged, $user->localToday());
+
+        $row = fn ($r, $state) => [
+            'date' => $r[1]->toDateString(),
+            'channel' => $r[0]->channel,
+            'trigger_type' => $r[0]->trigger_type,
+            'days_offset' => $r[0]->days_offset,
+            'state' => $state,
+        ];
+
+        return array_merge(
+            array_map(fn ($r) => $row($r, 'due_now'), $plan['send']),
+            array_map(fn ($r) => $row($r, 'scheduled'), $plan['upcoming']),
+        );
     }
 
     public function update(Request $request, int $id): InvoiceResource

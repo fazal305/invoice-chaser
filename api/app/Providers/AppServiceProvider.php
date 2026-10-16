@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Sms\LogSmsSender;
+use App\Sms\SmsSender;
+use App\Sms\TwilioSmsSender;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -11,7 +14,15 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->bind(SmsSender::class, function () {
+            if (config('services.sms.driver') === 'twilio') {
+                $c = config('services.twilio');
+
+                return new TwilioSmsSender((string) $c['sid'], (string) $c['token'], (string) $c['from'], $c['status_callback'] ?: null);
+            }
+
+            return new LogSmsSender;
+        });
     }
 
     public function boot(): void

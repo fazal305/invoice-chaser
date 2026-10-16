@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'frontend_url' => explode(',', (string) env('FRONTEND_URL', 'http://localhost:5471'))[0],
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

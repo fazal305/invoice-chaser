@@ -12,6 +12,8 @@ class TemplateRenderer
         'days_overdue', 'payment_link', 'company_name', 'issue_date',
     ];
 
+    public const NO_LINK = '(reply to this message for payment details)';
+
     /** Returns placeholders in the text that we don't know how to fill. */
     public static function unknownPlaceholders(string $text): array
     {
@@ -33,7 +35,7 @@ class TemplateRenderer
             'due_date' => $invoice->due_date->format('j M Y'),
             'issue_date' => $invoice->issue_date->format('j M Y'),
             'days_overdue' => (string) $overdue,
-            'payment_link' => $invoice->payment_url ?: ($user->payment_url ?: ''),
+            'payment_link' => $invoice->payment_url ?: ($user->payment_url ?: self::NO_LINK),
             'company_name' => $user->company_name,
         ];
     }

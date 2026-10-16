@@ -29,6 +29,25 @@ function Dot({ status }) {
   return <span aria-hidden="true" className={`mt-1 size-3.5 shrink-0 rounded-full border-2 ${color}`} />
 }
 
+export function UpcomingReminders({ upcoming }) {
+  if (!upcoming?.length) return null
+  return (
+    <div className="mb-5 rounded-lg border border-line bg-paper p-4">
+      <p className="text-sm font-semibold">Coming up</p>
+      <ul className="mt-2 space-y-1.5 text-sm">
+        {upcoming.map((u) => (
+          <li key={`${u.date}-${u.channel}-${u.days_offset}`} className="flex flex-wrap justify-between gap-x-4">
+            <span>
+              {u.channel === 'sms' ? 'SMS' : 'Email'} · {stepLabel(u)}
+            </span>
+            <span className="text-muted tabular">{u.state === 'due_now' ? 'Sending today' : formatDate(u.date)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export function ActivityTimeline({ invoice, activity }) {
   const events = [
     ...activity.map((log) => ({ key: `log-${log.id}`, kind: 'log', log, at: log.sent_at || log.created_at })),
@@ -89,7 +108,7 @@ function LogEntry({ log }) {
         {log.channel === 'sms' ? 'SMS' : 'Email'} reminder · {stepLabel(log.step)}{' '}
         <span className={`font-semibold ${s.tone}`}>— {s.label}</span>
       </p>
-      <p className="break-all text-muted">{log.recipient || 'No recipient'}</p>
+      {log.recipient && <p className="break-all text-muted">{log.recipient}</p>}
       <ul className="mt-1 space-y-0.5 text-xs text-muted">
         <li>Scheduled for {formatDate(log.scheduled_for)}</li>
         {log.sent_at && <li>Sent {formatDateTime(log.sent_at)}{log.attempts > 1 ? ` after ${log.attempts} attempts` : ''}</li>}

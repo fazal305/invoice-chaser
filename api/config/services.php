@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    'chase' => [
+        'send_hour' => (int) env('CHASE_SEND_HOUR', 9),
+    ],
+
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+    ],
+
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_AUTH_TOKEN'),
+        'from' => env('TWILIO_FROM'),
+        'status_callback' => env('TWILIO_STATUS_CALLBACK_URL'),
+    ],
+
+    'mailgun' => [
+        'webhook_signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
+    ],
+
 ];

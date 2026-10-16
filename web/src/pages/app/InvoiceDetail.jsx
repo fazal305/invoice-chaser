@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { Alert, Button, Card, ConfirmDialog, LinkButton, LoadState, Skeleton, StatusBadge } from '../../components/ui'
-import { ActivityTimeline } from '../../components/ActivityTimeline'
+import { ActivityTimeline, UpcomingReminders } from '../../components/ActivityTimeline'
 import { api, errorMessage } from '../../lib/api'
 import { formatDate, formatDateTime, formatMoney } from '../../lib/format'
 import { useDocumentTitle, useResource } from '../../hooks/useResource'
@@ -73,7 +73,7 @@ export default function InvoiceDetail() {
         </div>
       }
     >
-      {({ data: inv, activity }) => {
+      {({ data: inv, activity, upcoming }) => {
         const editable = !['paid', 'cancelled'].includes(inv.status)
         const reopen = inv.status === 'paid'
         return (
@@ -139,7 +139,8 @@ export default function InvoiceDetail() {
                 </dl>
               </Card>
               <Card aria-labelledby="activity-heading">
-                <h2 id="activity-heading" className="text-lg font-semibold">Reminder activity</h2>
+                <h2 id="activity-heading" className="mb-4 text-lg font-semibold">Reminder activity</h2>
+                <UpcomingReminders upcoming={upcoming} />
                 <ActivityTimeline invoice={inv} activity={activity} />
               </Card>
             </div>

@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
         $middleware->redirectGuestsTo(fn () => null);
+        // Provider signatures cover the raw values, so webhook input must not be normalised.
+        $isWebhook = fn (Request $request) => $request->is('api/webhooks/*');
+        $middleware->trimStrings(except: [$isWebhook]);
+        $middleware->convertEmptyStringsToNull(except: [$isWebhook]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

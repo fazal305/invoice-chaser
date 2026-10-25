@@ -8,6 +8,8 @@ import AppLayout, { RequireAuth } from './layouts/AppLayout'
 import { SkeletonRows } from './components/ui'
 import NotFound from './pages/public/NotFound'
 import Landing from './pages/public/Landing'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 const Privacy = lazy(() => import('./pages/public/Legal').then((m) => ({ default: m.Privacy })))
 const Terms = lazy(() => import('./pages/public/Legal').then((m) => ({ default: m.Terms })))
@@ -92,5 +94,7 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <RouterProvider router={router} />
+    <Analytics />
+    <SpeedInsights />
   </StrictMode>,
 )
